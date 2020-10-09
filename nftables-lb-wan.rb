@@ -3,6 +3,9 @@
 my_dir = __dir__
 
 $flush_tables = true
+$delete_tables = true
+
+jump_format = "both"
 
 wan_interfaces = {}
 
@@ -52,6 +55,7 @@ wan_interfaces.each_key do |interface|
 end
 
 `#{nftables_cmd} flush table nat` if $flush_tables
+`#{nftables_cmd} delete table nat` if $delete_tables
 
 `#{nftables_cmd} add table nat`
 `#{nftables_cmd} add chain ip nat postrouting '{ type nat hook postrouting priority 100; policy accept; }'`
@@ -60,6 +64,7 @@ end
 
 # MANGLE
 `#{nftables_cmd} flush table mangle` if $flush_tables
+`#{nftables_cmd} delete table mangle` if $delete_tables
 
 `#{nftables_cmd} add table mangle`
 
@@ -77,9 +82,18 @@ end
 wan_vmap_targets = []
 int_counter=0
 wan_interfaces.each_key do |interface|
-  `#{nftables_cmd} add chain ip mangle wan_rt_table_#{wan_interfaces[interface]["rt_table"]}`
-  `#{nftables_cmd} add rule ip mangle wan_rt_table_#{wan_interfaces[interface]["rt_table"]} counter ct mark set 0x#{wan_interfaces[interface]["rt_mark"]}`
-  wan_vmap_targets << "#{int_counter} : jump wan_rt_table_#{wan_interfaces[interface]["rt_table"]}"
+    jump_table = ""
+    case jump_format
+    when "table"
+        jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}"
+    when "mark"
+        jump_table="wan_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
+    else
+        jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
+    end
+  `#{nftables_cmd} add chain ip mangle #{jump_table}`
+  `#{nftables_cmd} add rule ip mangle #{jump_table} counter ct mark set 0x#{wan_interfaces[interface]["rt_mark"]}`
+  wan_vmap_targets << "#{int_counter} : jump #{jump_table}"
   int_counter=int_counter+1
 end
 
@@ -92,6 +106,19 @@ end
 `#{nftables_cmd} add rule ip mangle prerouting counter meta mark set ct mark`
 
 `#{nftables_cmd} add rule ip mangle prerouting ct mark != 0x0 counter ct mark set mark`
+wan_interfaces.each_key do |interface|
+    jump_table = ""
+    case jump_format
+    when "table"
+        jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}"
+    when "mark"
+        jump_table="wan_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
+    else
+        jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
+    end
+    `#{nftables_cmd} add rule ip mangle prerouting iifname #{interface} ct state new counter jump #{jump_table}`
+end
+
 `#{nftables_cmd} add rule ip mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ip protocol tcp ct state new counter jump PCC_OUT_TCP`
 `#{nftables_cmd} add rule ip mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ip protocol udp ct state new counter jump PCC_OUT_UDP`
 `#{nftables_cmd} add rule ip mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ct state new counter jump PCC_OUT_OTHERS`
