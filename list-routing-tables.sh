@@ -2,10 +2,18 @@
 
 # https://serverfault.com/questions/618857/list-all-route-tables
 
-ip route show table all | grep "table" | sed 's/.*\(table.*\)/\1/g' | awk '{print $2}' | sort | uniq
+set -x
 
-#ip route show table all | grep -Po 'table \K[^\s]+' | sort -u
+ip rule
 
-#ip route show table all | grep "table" | sed 's/.*\(table.*\)/\1/g' | awk '{print $2}' | sort | uniq | grep -e "[0-9]"
+set +x
 
-#ip route show table all | grep -Po 'table \K[^\s]+' | sort -u | grep -e "[0-9]"
+for i in $(ip route show table all | grep "table" | sed 's/.*\(table.*\)/\1/g' | awk '{print $2}' | sort | uniq | grep -e "[0-9]");do
+  echo "Table: $i"
+  echo "============"
+  set -x
+  ip route show table $i
+  set +x
+done
+
+set +x

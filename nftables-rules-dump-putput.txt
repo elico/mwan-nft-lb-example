@@ -1,0 +1,112 @@
+table ip nat {
+	chain postrouting {
+		type nat hook postrouting priority 100; policy accept;
+		counter packets 5 bytes 298 oifname { "ether5", "ether6", "ether7", "ether8", "ether9", "ether10", "ether11", "ether12", "ether13", "ether14", "ether15" } masquerade
+	}
+}
+table ip mangle {
+	chain prerouting {
+		type filter hook prerouting priority -150; policy accept;
+		counter packets 2454 bytes 1045798 mark set ct mark
+		ct mark != 0x00000000 counter packets 1448 bytes 973572 ct mark set mark
+		counter packets 2454 bytes 1045798 iifname "ether5" ct state new ct mark 0x00000000 jump wan_rt_table_1984_rt_mark_1322
+		counter packets 2454 bytes 1045798 iifname "ether6" ct state new ct mark 0x00000000 jump wan_rt_table_1217_rt_mark_1739
+		counter packets 2454 bytes 1045798 iifname "ether7" ct state new ct mark 0x00000000 jump wan_rt_table_1763_rt_mark_1400
+		counter packets 2454 bytes 1045798 iifname "ether8" ct state new ct mark 0x00000000 jump wan_rt_table_1524_rt_mark_1449
+		counter packets 2454 bytes 1045798 iifname "ether9" ct state new ct mark 0x00000000 jump wan_rt_table_1259_rt_mark_1717
+		counter packets 2454 bytes 1045798 iifname "ether10" ct state new ct mark 0x00000000 jump wan_rt_table_1336_rt_mark_1737
+		counter packets 2454 bytes 1045798 iifname "ether11" ct state new ct mark 0x00000000 jump wan_rt_table_1148_rt_mark_1209
+		counter packets 2454 bytes 1045798 iifname "ether12" ct state new ct mark 0x00000000 jump wan_rt_table_1689_rt_mark_1418
+		counter packets 2454 bytes 1045798 iifname "ether13" ct state new ct mark 0x00000000 jump wan_rt_table_1788_rt_mark_1218
+		counter packets 2454 bytes 1045798 iifname "ether14" ct state new ct mark 0x00000000 jump wan_rt_table_1473_rt_mark_1827
+		counter packets 2454 bytes 1045798 iifname "ether15" ct state new ct mark 0x00000000 jump wan_rt_table_1847_rt_mark_1488
+		iifname { "ether23" } ip protocol tcp ct state new counter packets 3 bytes 180 jump PCC_OUT_TCP
+		iifname { "ether23" } ip protocol udp ct state new counter packets 4 bytes 236 jump PCC_OUT_UDP
+		iifname { "ether23" } ct state new counter packets 7 bytes 416 jump PCC_OUT_OTHERS
+		ct mark 0x00001322 counter packets 13 bytes 1312 mark set 0x00001322
+		ct mark 0x00001739 counter packets 4 bytes 488 mark set 0x00001739
+		ct mark 0x00001400 counter packets 0 bytes 0 mark set 0x00001400
+		ct mark 0x00001449 counter packets 4 bytes 760 mark set 0x00001449
+		ct mark 0x00001717 counter packets 0 bytes 0 mark set 0x00001717
+		ct mark 0x00001737 counter packets 0 bytes 0 mark set 0x00001737
+		ct mark 0x00001209 counter packets 152 bytes 124474 mark set 0x00001209
+		ct mark 0x00001418 counter packets 0 bytes 0 mark set 0x00001418
+		ct mark 0x00001218 counter packets 0 bytes 0 mark set 0x00001218
+		ct mark 0x00001827 counter packets 776 bytes 681524 mark set 0x00001827
+		ct mark 0x00001488 counter packets 0 bytes 0 mark set 0x00001488
+	}
+
+	chain input {
+		type filter hook input priority -150; policy accept;
+	}
+
+	chain forward {
+		type filter hook forward priority -150; policy accept;
+	}
+
+	chain output {
+		type route hook output priority -150; policy accept;
+	}
+
+	chain postrouting {
+		type filter hook postrouting priority -150; policy accept;
+		counter packets 1915 bytes 989806 ct mark set mark
+	}
+
+	chain PCC_OUT_TCP {
+		counter packets 3 bytes 180 jhash ip saddr . tcp sport . ip daddr . tcp dport mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+	}
+
+	chain PCC_OUT_UDP {
+		counter packets 4 bytes 236 jhash ip saddr . udp sport . ip daddr . udp dport mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+	}
+
+	chain PCC_OUT_OTHERS {
+		counter packets 7 bytes 416 ip protocol { tcp, udp } return
+		counter packets 0 bytes 0 jhash ip saddr . ip daddr mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+	}
+
+	chain wan_rt_table_1984_rt_mark_1322 {
+		counter packets 1 bytes 60 ct mark set 0x00001322
+	}
+
+	chain wan_rt_table_1217_rt_mark_1739 {
+		counter packets 2 bytes 118 ct mark set 0x00001739
+	}
+
+	chain wan_rt_table_1763_rt_mark_1400 {
+		counter packets 0 bytes 0 ct mark set 0x00001400
+	}
+
+	chain wan_rt_table_1524_rt_mark_1449 {
+		counter packets 2 bytes 118 ct mark set 0x00001449
+	}
+
+	chain wan_rt_table_1259_rt_mark_1717 {
+		counter packets 0 bytes 0 ct mark set 0x00001717
+	}
+
+	chain wan_rt_table_1336_rt_mark_1737 {
+		counter packets 0 bytes 0 ct mark set 0x00001737
+	}
+
+	chain wan_rt_table_1148_rt_mark_1209 {
+		counter packets 1 bytes 60 ct mark set 0x00001209
+	}
+
+	chain wan_rt_table_1689_rt_mark_1418 {
+		counter packets 0 bytes 0 ct mark set 0x00001418
+	}
+
+	chain wan_rt_table_1788_rt_mark_1218 {
+		counter packets 0 bytes 0 ct mark set 0x00001218
+	}
+
+	chain wan_rt_table_1473_rt_mark_1827 {
+		counter packets 1 bytes 60 ct mark set 0x00001827
+	}
+
+	chain wan_rt_table_1847_rt_mark_1488 {
+		counter packets 0 bytes 0 ct mark set 0x00001488
+	}
+}

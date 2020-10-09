@@ -1,0 +1,236 @@
++ ip rule
+0:	from all lookup local 
+32755:	from all fwmark 0x1488 lookup 1847 
+32756:	from all fwmark 0x1827 lookup 1473 
+32757:	from all fwmark 0x1218 lookup 1788 
+32758:	from all fwmark 0x1418 lookup 1689 
+32759:	from all fwmark 0x1209 lookup 1148 
+32760:	from all fwmark 0x1737 lookup 1336 
+32761:	from all fwmark 0x1717 lookup 1259 
+32762:	from all fwmark 0x1449 lookup 1524 
+32763:	from all fwmark 0x1400 lookup 1763 
+32764:	from all fwmark 0x1739 lookup 1217 
+32765:	from all fwmark 0x1322 lookup 1984 
+32766:	from all lookup main 
+32767:	from all lookup default 
++ set +x
+Table: 1148
+============
++ ip route show table 1148
+default via 192.168.211.254 dev ether11 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1217
+============
++ ip route show table 1217
+default via 192.168.206.254 dev ether6 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1259
+============
++ ip route show table 1259
+default via 192.168.209.254 dev ether9 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1336
+============
++ ip route show table 1336
+default via 192.168.210.254 dev ether10 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1473
+============
++ ip route show table 1473
+default via 192.168.214.254 dev ether14 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1524
+============
++ ip route show table 1524
+default via 192.168.208.254 dev ether8 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1689
+============
++ ip route show table 1689
+default via 192.168.212.254 dev ether12 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1763
+============
++ ip route show table 1763
+default via 192.168.207.254 dev ether7 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1788
+============
++ ip route show table 1788
+default via 192.168.213.254 dev ether13 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1847
+============
++ ip route show table 1847
+default via 192.168.215.254 dev ether15 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x
+Table: 1984
+============
++ ip route show table 1984
+default via 192.168.205.254 dev ether5 
+169.254.0.0/16 dev ether10 scope link metric 1000 
+192.168.111.0/24 dev ether0 proto kernel scope link src 192.168.111.78 metric 100 
+192.168.125.0/24 dev ether23 proto kernel scope link src 192.168.125.254 metric 109 
+192.168.204.0/24 dev ether4 proto kernel scope link src 192.168.204.100 metric 111 
+192.168.205.0/24 dev ether5 proto kernel scope link src 192.168.205.100 metric 112 
+192.168.206.0/24 dev ether6 proto kernel scope link src 192.168.206.100 metric 113 
+192.168.207.0/24 dev ether7 proto kernel scope link src 192.168.207.100 metric 114 
+192.168.208.0/24 dev ether8 proto kernel scope link src 192.168.208.100 metric 115 
+192.168.209.0/24 dev ether9 proto kernel scope link src 192.168.209.100 metric 116 
+192.168.210.0/24 dev ether10 proto kernel scope link src 192.168.210.100 metric 102 
+192.168.211.0/24 dev ether11 proto kernel scope link src 192.168.211.100 metric 103 
+192.168.212.0/24 dev ether12 proto kernel scope link src 192.168.212.100 metric 104 
+192.168.213.0/24 dev ether13 proto kernel scope link src 192.168.213.100 metric 105 
+192.168.214.0/24 dev ether14 proto kernel scope link src 192.168.214.100 metric 106 
+192.168.215.0/24 dev ether15 proto kernel scope link src 192.168.215.100 metric 107 
++ set +x

@@ -116,7 +116,7 @@ wan_interfaces.each_key do |interface|
     else
         jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
     end
-    `#{nftables_cmd} add rule ip mangle prerouting iifname #{interface} ct state new counter jump #{jump_table}`
+    `#{nftables_cmd} add rule ip mangle prerouting counter iifname #{interface} ct state new ct mark == 0x0 jump #{jump_table}`
 end
 
 `#{nftables_cmd} add rule ip mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ip protocol tcp ct state new counter jump PCC_OUT_TCP`
