@@ -9,13 +9,6 @@ def system_quietly(cmd)
     stderr = nil
 
     stdout, stderr, exit_status = Open3.capture3(cmd)
-    # Open3.popen3(*cmd) do |, wait_thread|
-    #     stdin.puts()
-    #     err = stderr.gets(nil)
-    #     out = stdout.gets(nil)
-    #     [stdin, stdout, stderr].each{|stream| stream.send('close')}
-    #     exit_status = wait_thread.value
-    # end
     stdout = "" if stdout == nil
     stderr = "" if stderr == nil
     ret = {"cmd" => cmd , "stdout" => stdout.lines , "stderr" => stderr.lines , "code" => exit_status.to_i, "ok" =>  exit_status.to_i == 0 , "exit_status" => exit_status }
@@ -25,7 +18,7 @@ end
 my_dir = __dir__
 
 commands = []
-
+nftables_commands = []
 execution_errors = []
 
 $debug_cmds = 0
@@ -184,31 +177,31 @@ commands << "/bin/bash #{my_dir}/disable-rp-filter.sh"
 # should be empty
 vm_nftables=system_quietly("#{nftables_cmd} -nn list ruleset")["stdout"]
 
-commands << "#{nftables_cmd} flush table lb_nat" if $flush_tables and !$use_nft_vm
-commands << "#{nftables_cmd} delete table lb_nat" if $delete_tables and !$use_nft_vm
+nftables_commands << "flush table lb_nat" if $flush_tables and !$use_nft_vm
+nftables_commands << "delete table lb_nat" if $delete_tables and !$use_nft_vm
 
-commands << "#{nftables_cmd} add table lb_nat"
-commands << "#{nftables_cmd} add chain ip lb_nat postrouting '{ type nat hook postrouting priority 100; policy accept; }'"
-commands << "#{nftables_cmd} add rule lb_nat postrouting oifname { \"#{wan_interfaces.keys.join("\" , \"")}\" } counter masquerade "
+nftables_commands << "add table lb_nat"
+nftables_commands << "add chain ip lb_nat postrouting { type nat hook postrouting priority 100; policy accept; }"
+nftables_commands << "add rule lb_nat postrouting oifname { \"#{wan_interfaces.keys.join("\" , \"")}\" } counter masquerade"
 
 # MANGLE
-commands << "#{nftables_cmd} flush table iplb" if $flush_tables and !$use_nft_vm
-commands << "#{nftables_cmd} delete table iplb" if $delete_tables  and !$use_nft_vm
+nftables_commands << "flush table iplb" if $flush_tables and !$use_nft_vm
+nftables_commands << "delete table iplb" if $delete_tables  and !$use_nft_vm
 
-commands << "#{nftables_cmd} add table lb_mangle"
+nftables_commands << "add table lb_mangle"
 
-commands << "#{nftables_cmd} add chain ip lb_mangle prerouting '{ type filter hook prerouting priority -150; policy accept; }'"
-commands << "#{nftables_cmd} add chain ip lb_mangle input '{ type filter hook input priority -150; policy accept; }'"
-commands << "#{nftables_cmd} add chain ip lb_mangle forward '{ type filter hook forward priority -150; policy accept; }'"
-commands << "#{nftables_cmd} add chain ip lb_mangle output '{ type route hook output priority -150; policy accept; }'"
-commands << "#{nftables_cmd} add chain ip lb_mangle postrouting '{ type filter hook postrouting priority -150; policy accept; }'"
+nftables_commands << "add chain ip lb_mangle prerouting { type filter hook prerouting priority -150; policy accept; }"
+nftables_commands << "add chain ip lb_mangle input { type filter hook input priority -150; policy accept; }"
+nftables_commands << "add chain ip lb_mangle forward { type filter hook forward priority -150; policy accept; }"
+nftables_commands << "add chain ip lb_mangle output { type route hook output priority -150; policy accept; }"
+nftables_commands << "add chain ip lb_mangle postrouting { type filter hook postrouting priority -150; policy accept; }"
 
 
 port_based_ip_protocols.each do |protocol|
-    commands << "#{nftables_cmd} add chain ip lb_mangle PCC_OUT_#{protocol.upcase}"
+    nftables_commands << "add chain ip lb_mangle PCC_OUT_#{protocol.upcase}"
 end
 
-commands << "#{nftables_cmd} add chain ip lb_mangle PCC_OUT_OTHERS"
+nftables_commands << "add chain ip lb_mangle PCC_OUT_OTHERS"
 
 # Creating tables per WAN interface for CT marking
 
@@ -224,8 +217,8 @@ wan_interfaces.each_key do |interface|
     else
         jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
     end
-    commands << "#{nftables_cmd} add chain ip lb_mangle #{jump_table}"
-    commands << "#{nftables_cmd} add rule ip lb_mangle #{jump_table} ct mark set 0x#{wan_interfaces[interface]["rt_mark"]} counter"
+    nftables_commands << "add chain ip lb_mangle #{jump_table}"
+    nftables_commands << "add rule ip lb_mangle #{jump_table} ct mark set 0x#{wan_interfaces[interface]["rt_mark"]} counter"
 
   wan_vmap_targets << "#{int_counter} : jump #{jump_table}"
   int_counter=int_counter+1
@@ -234,91 +227,91 @@ end
 port_based_ip_protocols.each do |protocol|
   case $jhash_distribution
   when "srcip+dstip+dstport"
-    commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . ip daddr . #{protocol.downcase} dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
+    nftables_commands << "add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . ip daddr . #{protocol.downcase} dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
   when "srcip+dstip"
-    commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . ip daddr dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
+    nftables_commands << "add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . ip daddr dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
   when "srcip"
-    commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
+    nftables_commands << "add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
   else
-    commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . #{protocol.downcase} sport . ip daddr . #{protocol.downcase} dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
+    nftables_commands << "add rule ip lb_mangle PCC_OUT_#{protocol.upcase} jhash ip protocol . ip saddr . #{protocol.downcase} sport . ip daddr . #{protocol.downcase} dport mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
   end
 end
 
-commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_OTHERS ip protocol { \"#{port_based_ip_protocols.join("\" , \"")}\" } counter return"
+nftables_commands << "add rule ip lb_mangle PCC_OUT_OTHERS ip protocol { \"#{port_based_ip_protocols.join("\" , \"")}\" } counter return"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle PCC_OUT_OTHERS jhash ip protocol . ip saddr . ip daddr mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
+nftables_commands << "add rule ip lb_mangle PCC_OUT_OTHERS jhash ip protocol . ip saddr . ip daddr mod #{int_counter} vmap { #{wan_vmap_targets.join(" , ")} } counter"
 
-commands << "#{nftables_cmd} add chain ip lb_mangle SET_MARK_ON_PACKET"
+nftables_commands << "add chain ip lb_mangle SET_MARK_ON_PACKET"
 
-commands << "#{nftables_cmd} add chain ip lb_mangle SET_MARK_ON_PACKET_NON_0"
+nftables_commands << "add chain ip lb_mangle SET_MARK_ON_PACKET_NON_0"
 
-commands << "#{nftables_cmd} add chain ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS"
+nftables_commands << "add chain ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET meta mark set ct mark counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET meta mark set ct mark counter"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 ct state new counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 ct state established,related counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 ct state new counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 ct state established,related counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 ct state new counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark != 0x0 ct state established,related counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 ct state new counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET ct mark == 0x0 ct state established,related counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET counter"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct mark set mark counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state new counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state established counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state related counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 jump SET_MARK_ON_PACKET_NON_0_COUNTERS"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct mark set mark counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state new counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state established counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 ct state related counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0 jump SET_MARK_ON_PACKET_NON_0_COUNTERS"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state new counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state established counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state related counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state invalid counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state untracked counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state new counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state established counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state related counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state invalid counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct state untracked counter"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct direction original counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct direction reply counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct direction original counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct direction reply counter"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status expected counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status seen-reply counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status assured counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status confirmed counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status snat counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status dnat counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status dying counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status expected counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status seen-reply counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status assured counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status confirmed counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status snat counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status dnat counter"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status dying counter"
 
 if $interfaces_counters
     ether_interfaces_list.each do |i| 
 
         counters_ip_protocols.each do |protocol|
-            commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ip protocol #{protocol} counter"
+            nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ip protocol #{protocol} counter"
         end
         
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state new counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state established counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state related counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state invalid counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state untracked counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state new counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state established counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state related counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state invalid counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state untracked counter"
         
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction original counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction reply counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction original counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction reply counter"
         
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status expected counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status seen-reply counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status assured counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status confirmed counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status snat counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status dnat counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status dying counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status expected counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status seen-reply counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status assured counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status confirmed counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status snat counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status dnat counter"
+        nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status dying counter"
     end
 end
 
-commands << "#{nftables_cmd} add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS counter accept"
+nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS counter accept"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle prerouting jump SET_MARK_ON_PACKET"
+nftables_commands << "add rule ip lb_mangle prerouting jump SET_MARK_ON_PACKET"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle prerouting ct mark != 0x0 jump SET_MARK_ON_PACKET_NON_0"
+nftables_commands << "add rule ip lb_mangle prerouting ct mark != 0x0 jump SET_MARK_ON_PACKET_NON_0"
 
 # Attaching new connections from specific interfaces with their respectible rt_mark
 
@@ -332,55 +325,62 @@ wan_interfaces.each_key do |interface|
     else
         jump_table="wan_rt_table_#{wan_interfaces[interface]["rt_table"]}_rt_mark_#{wan_interfaces[interface]["rt_mark"]}"
     end
-    commands << "#{nftables_cmd} add rule ip lb_mangle prerouting iifname #{interface} ct state new ct mark == 0x0 counter jump #{jump_table}"
+    nftables_commands << "add rule ip lb_mangle prerouting iifname #{interface} ct state new ct mark == 0x0 counter jump #{jump_table}"
 end
 
 port_based_ip_protocols.each do |protocol|
-    commands << "#{nftables_cmd} add rule ip lb_mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ip protocol #{protocol.downcase} ct state new counter jump PCC_OUT_#{protocol.upcase}"
+    nftables_commands << "add rule ip lb_mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ip protocol #{protocol.downcase} ct state new counter jump PCC_OUT_#{protocol.upcase}"
 end
 
-commands << "#{nftables_cmd} add rule ip lb_mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ct state new counter jump PCC_OUT_OTHERS"
+nftables_commands << "add rule ip lb_mangle prerouting iifname { \"#{lan_interfaces.join("\" , \"")}\" } ct state new counter jump PCC_OUT_OTHERS"
 
 wan_interfaces.each_key do |interface|
-    commands << "#{nftables_cmd} add rule ip lb_mangle prerouting ct mark 0x#{wan_interfaces[interface]["rt_mark"]} meta mark set 0x#{wan_interfaces[interface]["rt_mark"]} counter"
+    nftables_commands << "add rule ip lb_mangle prerouting ct mark 0x#{wan_interfaces[interface]["rt_mark"]} meta mark set 0x#{wan_interfaces[interface]["rt_mark"]} counter"
 end
 
-commands << "#{nftables_cmd} add chain ip lb_mangle POSTROUTING_COUNTERS"
-commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS counter"
+nftables_commands << "add chain ip lb_mangle POSTROUTING_COUNTERS"
+nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS counter"
 
 if $interfaces_counters
     ether_interfaces_list.each do |i| 
         counters_ip_protocols.each do |protocol|
-            commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ip protocol #{protocol} counter"
+            nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ip protocol #{protocol} counter"
         end
 
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state new counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state established counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state related counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state invalid counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state untracked counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state new counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state established counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state related counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state invalid counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct state untracked counter"
         
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct direction original counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct direction reply counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct direction original counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct direction reply counter"
         
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status expected counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status seen-reply counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status assured counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status confirmed counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status snat counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status dnat counter"
-        commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status dying counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status expected counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status seen-reply counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status assured counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status confirmed counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status snat counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status dnat counter"
+        nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS oifname #{i} ct status dying counter"
 
     end
 
 end
 
-commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS ct mark set mark counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle POSTROUTING_COUNTERS counter"
+nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS ct mark set mark counter"
+nftables_commands << "add rule ip lb_mangle POSTROUTING_COUNTERS counter"
 
-commands << "#{nftables_cmd} add rule ip lb_mangle postrouting counter jump POSTROUTING_COUNTERS"
-commands << "#{nftables_cmd} add rule ip lb_mangle postrouting ct mark set mark counter"
-commands << "#{nftables_cmd} add rule ip lb_mangle postrouting counter"
+nftables_commands << "add rule ip lb_mangle postrouting counter jump POSTROUTING_COUNTERS"
+nftables_commands << "add rule ip lb_mangle postrouting ct mark set mark counter"
+nftables_commands << "add rule ip lb_mangle postrouting counter"
+
+file = File.open("#{my_dir}/tmp.in.nft", "w")
+file.puts("#!/usr/sbin/nft -f")
+file.puts(nftables_commands.join("\n"))
+file.close
+
+commands << "#{nftables_cmd} -f #{my_dir}/tmp.in.nft"
 
 puts("Executing #{commands.size} shell commands:")
 
