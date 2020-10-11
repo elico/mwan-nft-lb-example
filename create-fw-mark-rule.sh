@@ -10,3 +10,4 @@ if [ "$RES" -eq "0" ]; then
 fi
 
 ip rule add fwmark ${MARK} table ${TABLE}
+ip rule show fwmark ${MARK}
