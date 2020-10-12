@@ -21,7 +21,7 @@ commands = []
 nftables_commands = []
 execution_errors = []
 
-$debug_cmds = 0
+$debug_cmds = 1
 $flush_tables = true
 $delete_tables = true
 $use_nft_vm = true
@@ -61,7 +61,7 @@ def ether_interfaces()
     system_quietly("ip -o l")["stdout"].each do |l|
         parts = l.split
         if parts[15] =~ /^link\/ether/
-            arr << parts[1].gsub(":","")
+            arr << parts[1].gsub(":","").gsub(/@.*/, "")
         end
     end
     return arr
@@ -282,7 +282,7 @@ nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct
 nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS ct status dying counter"
 
 if $interfaces_counters
-    ether_interfaces_list.each do |i| 
+    ether_interfaces_list.each do |i|
 
         counters_ip_protocols.each do |protocol|
             nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ip protocol #{protocol} counter"
@@ -293,10 +293,10 @@ if $interfaces_counters
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state related counter"
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state invalid counter"
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct state untracked counter"
-        
+
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction original counter"
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct direction reply counter"
-        
+
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status expected counter"
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status seen-reply counter"
         nftables_commands << "add rule ip lb_mangle SET_MARK_ON_PACKET_NON_0_COUNTERS iifname #{i} ct status assured counter"
