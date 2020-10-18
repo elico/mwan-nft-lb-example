@@ -1,39 +1,42 @@
-table ip nat {
+table ip lb_nat {
 	chain postrouting {
 		type nat hook postrouting priority 100; policy accept;
-		counter packets 5 bytes 298 oifname { "ether5", "ether6", "ether7", "ether8", "ether9", "ether10", "ether11", "ether12", "ether13", "ether14", "ether15" } masquerade
+		oifname { "ether5", "ether6", "ether7", "ether8", "ether9", "ether10", "ether11", "ether12", "ether13", "ether14", "ether15" } counter packets 22 bytes 1340 masquerade
 	}
 }
-table ip mangle {
+table ip lb_mangle {
 	chain prerouting {
 		type filter hook prerouting priority -150; policy accept;
-		counter packets 2454 bytes 1045798 mark set ct mark
-		ct mark != 0x00000000 counter packets 1448 bytes 973572 ct mark set mark
-		counter packets 2454 bytes 1045798 iifname "ether5" ct state new ct mark 0x00000000 jump wan_rt_table_1984_rt_mark_1322
-		counter packets 2454 bytes 1045798 iifname "ether6" ct state new ct mark 0x00000000 jump wan_rt_table_1217_rt_mark_1739
-		counter packets 2454 bytes 1045798 iifname "ether7" ct state new ct mark 0x00000000 jump wan_rt_table_1763_rt_mark_1400
-		counter packets 2454 bytes 1045798 iifname "ether8" ct state new ct mark 0x00000000 jump wan_rt_table_1524_rt_mark_1449
-		counter packets 2454 bytes 1045798 iifname "ether9" ct state new ct mark 0x00000000 jump wan_rt_table_1259_rt_mark_1717
-		counter packets 2454 bytes 1045798 iifname "ether10" ct state new ct mark 0x00000000 jump wan_rt_table_1336_rt_mark_1737
-		counter packets 2454 bytes 1045798 iifname "ether11" ct state new ct mark 0x00000000 jump wan_rt_table_1148_rt_mark_1209
-		counter packets 2454 bytes 1045798 iifname "ether12" ct state new ct mark 0x00000000 jump wan_rt_table_1689_rt_mark_1418
-		counter packets 2454 bytes 1045798 iifname "ether13" ct state new ct mark 0x00000000 jump wan_rt_table_1788_rt_mark_1218
-		counter packets 2454 bytes 1045798 iifname "ether14" ct state new ct mark 0x00000000 jump wan_rt_table_1473_rt_mark_1827
-		counter packets 2454 bytes 1045798 iifname "ether15" ct state new ct mark 0x00000000 jump wan_rt_table_1847_rt_mark_1488
-		iifname { "ether23" } ip protocol tcp ct state new counter packets 3 bytes 180 jump PCC_OUT_TCP
-		iifname { "ether23" } ip protocol udp ct state new counter packets 4 bytes 236 jump PCC_OUT_UDP
-		iifname { "ether23" } ct state new counter packets 7 bytes 416 jump PCC_OUT_OTHERS
-		ct mark 0x00001322 counter packets 13 bytes 1312 mark set 0x00001322
-		ct mark 0x00001739 counter packets 4 bytes 488 mark set 0x00001739
-		ct mark 0x00001400 counter packets 0 bytes 0 mark set 0x00001400
-		ct mark 0x00001449 counter packets 4 bytes 760 mark set 0x00001449
-		ct mark 0x00001717 counter packets 0 bytes 0 mark set 0x00001717
-		ct mark 0x00001737 counter packets 0 bytes 0 mark set 0x00001737
-		ct mark 0x00001209 counter packets 152 bytes 124474 mark set 0x00001209
-		ct mark 0x00001418 counter packets 0 bytes 0 mark set 0x00001418
-		ct mark 0x00001218 counter packets 0 bytes 0 mark set 0x00001218
-		ct mark 0x00001827 counter packets 776 bytes 681524 mark set 0x00001827
-		ct mark 0x00001488 counter packets 0 bytes 0 mark set 0x00001488
+		jump SET_MARK_ON_PACKET
+		ct mark != 0x00000000 jump SET_MARK_ON_PACKET_NON_0
+		iifname "ether5" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1205
+		iifname "ether6" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1206
+		iifname "ether7" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1207
+		iifname "ether8" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1208
+		iifname "ether9" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1209
+		iifname "ether10" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1210
+		iifname "ether11" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1211
+		iifname "ether12" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1212
+		iifname "ether13" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1213
+		iifname "ether14" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1214
+		iifname "ether15" ct state new ct mark 0x00000000 counter packets 0 bytes 0 jump wan_rt_table_1215
+		iifname { "ether23" } ip protocol udp ct state new counter packets 1 bytes 56 jump PCC_OUT_UDP
+		iifname { "ether23" } ip protocol udplite ct state new counter packets 0 bytes 0 jump PCC_OUT_UDPLITE
+		iifname { "ether23" } ip protocol tcp ct state new counter packets 20 bytes 1200 jump PCC_OUT_TCP
+		iifname { "ether23" } ip protocol dccp ct state new counter packets 0 bytes 0 jump PCC_OUT_DCCP
+		iifname { "ether23" } ip protocol sctp ct state new counter packets 0 bytes 0 jump PCC_OUT_SCTP
+		iifname { "ether23" } ct state new counter packets 22 bytes 1340 jump PCC_OUT_OTHERS
+		ct mark 0x00001205 mark set 0x00001205 counter packets 2 bytes 120
+		ct mark 0x00001206 mark set 0x00001206 counter packets 2 bytes 120
+		ct mark 0x00001207 mark set 0x00001207 counter packets 4 bytes 240
+		ct mark 0x00001208 mark set 0x00001208 counter packets 3 bytes 180
+		ct mark 0x00001209 mark set 0x00001209 counter packets 2 bytes 116
+		ct mark 0x00001210 mark set 0x00001210 counter packets 2 bytes 120
+		ct mark 0x00001211 mark set 0x00001211 counter packets 3 bytes 180
+		ct mark 0x00001212 mark set 0x00001212 counter packets 2 bytes 144
+		ct mark 0x00001213 mark set 0x00001213 counter packets 2 bytes 120
+		ct mark 0x00001214 mark set 0x00001214 counter packets 0 bytes 0
+		ct mark 0x00001215 mark set 0x00001215 counter packets 0 bytes 0
 	}
 
 	chain input {
@@ -50,63 +53,673 @@ table ip mangle {
 
 	chain postrouting {
 		type filter hook postrouting priority -150; policy accept;
-		counter packets 1915 bytes 989806 ct mark set mark
-	}
-
-	chain PCC_OUT_TCP {
-		counter packets 3 bytes 180 jhash ip saddr . tcp sport . ip daddr . tcp dport mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+		counter packets 190 bytes 11072 jump POSTROUTING_COUNTERS
+		ct mark set mark counter packets 190 bytes 11072
+		counter packets 190 bytes 11072
 	}
 
 	chain PCC_OUT_UDP {
-		counter packets 4 bytes 236 jhash ip saddr . udp sport . ip daddr . udp dport mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+		jhash ip protocol . ip saddr . udp sport . ip daddr . udp dport mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
+	}
+
+	chain PCC_OUT_UDPLITE {
+		jhash ip protocol . ip saddr . udplite sport . ip daddr . udplite dport mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
+	}
+
+	chain PCC_OUT_TCP {
+		jhash ip protocol . ip saddr . tcp sport . ip daddr . tcp dport mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
+	}
+
+	chain PCC_OUT_DCCP {
+		jhash ip protocol . ip saddr . dccp sport . ip daddr . dccp dport mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
+	}
+
+	chain PCC_OUT_SCTP {
+		jhash ip protocol . ip saddr . sctp sport . ip daddr . sctp dport mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
 	}
 
 	chain PCC_OUT_OTHERS {
-		counter packets 7 bytes 416 ip protocol { tcp, udp } return
-		counter packets 0 bytes 0 jhash ip saddr . ip daddr mod 11 vmap { 0 : jump wan_rt_table_1984_rt_mark_1322, 1 : jump wan_rt_table_1217_rt_mark_1739, 2 : jump wan_rt_table_1763_rt_mark_1400, 3 : jump wan_rt_table_1524_rt_mark_1449, 4 : jump wan_rt_table_1259_rt_mark_1717, 5 : jump wan_rt_table_1336_rt_mark_1737, 6 : jump wan_rt_table_1148_rt_mark_1209, 7 : jump wan_rt_table_1689_rt_mark_1418, 8 : jump wan_rt_table_1788_rt_mark_1218, 9 : jump wan_rt_table_1473_rt_mark_1827, 10 : jump wan_rt_table_1847_rt_mark_1488 }
+		ip protocol { tcp, udp, dccp, sctp, udplite } counter packets 21 bytes 1256 return
+		jhash ip protocol . ip saddr . ip daddr mod 11 vmap { 0 : jump wan_rt_table_1205, 1 : jump wan_rt_table_1206, 2 : jump wan_rt_table_1207, 3 : jump wan_rt_table_1208, 4 : jump wan_rt_table_1209, 5 : jump wan_rt_table_1210, 6 : jump wan_rt_table_1211, 7 : jump wan_rt_table_1212, 8 : jump wan_rt_table_1213, 9 : jump wan_rt_table_1214, 10 : jump wan_rt_table_1215 } counter packets 0 bytes 0
 	}
 
-	chain wan_rt_table_1984_rt_mark_1322 {
-		counter packets 1 bytes 60 ct mark set 0x00001322
+	chain wan_rt_table_1205 {
+		ct mark set 0x00001205 counter packets 2 bytes 120
 	}
 
-	chain wan_rt_table_1217_rt_mark_1739 {
-		counter packets 2 bytes 118 ct mark set 0x00001739
+	chain wan_rt_table_1206 {
+		ct mark set 0x00001206 counter packets 2 bytes 120
 	}
 
-	chain wan_rt_table_1763_rt_mark_1400 {
-		counter packets 0 bytes 0 ct mark set 0x00001400
+	chain wan_rt_table_1207 {
+		ct mark set 0x00001207 counter packets 4 bytes 240
 	}
 
-	chain wan_rt_table_1524_rt_mark_1449 {
-		counter packets 2 bytes 118 ct mark set 0x00001449
+	chain wan_rt_table_1208 {
+		ct mark set 0x00001208 counter packets 3 bytes 180
 	}
 
-	chain wan_rt_table_1259_rt_mark_1717 {
-		counter packets 0 bytes 0 ct mark set 0x00001717
+	chain wan_rt_table_1209 {
+		ct mark set 0x00001209 counter packets 2 bytes 116
 	}
 
-	chain wan_rt_table_1336_rt_mark_1737 {
-		counter packets 0 bytes 0 ct mark set 0x00001737
+	chain wan_rt_table_1210 {
+		ct mark set 0x00001210 counter packets 2 bytes 120
 	}
 
-	chain wan_rt_table_1148_rt_mark_1209 {
-		counter packets 1 bytes 60 ct mark set 0x00001209
+	chain wan_rt_table_1211 {
+		ct mark set 0x00001211 counter packets 3 bytes 180
 	}
 
-	chain wan_rt_table_1689_rt_mark_1418 {
-		counter packets 0 bytes 0 ct mark set 0x00001418
+	chain wan_rt_table_1212 {
+		ct mark set 0x00001212 counter packets 2 bytes 144
 	}
 
-	chain wan_rt_table_1788_rt_mark_1218 {
-		counter packets 0 bytes 0 ct mark set 0x00001218
+	chain wan_rt_table_1213 {
+		ct mark set 0x00001213 counter packets 2 bytes 120
 	}
 
-	chain wan_rt_table_1473_rt_mark_1827 {
-		counter packets 1 bytes 60 ct mark set 0x00001827
+	chain wan_rt_table_1214 {
+		ct mark set 0x00001214 counter packets 0 bytes 0
 	}
 
-	chain wan_rt_table_1847_rt_mark_1488 {
-		counter packets 0 bytes 0 ct mark set 0x00001488
+	chain wan_rt_table_1215 {
+		ct mark set 0x00001215 counter packets 0 bytes 0
+	}
+
+	chain SET_MARK_ON_PACKET {
+		mark set ct mark counter packets 190 bytes 11072
+		ct mark != 0x00000000 counter packets 168 bytes 9732
+		ct mark != 0x00000000 ct state new counter packets 1 bytes 56
+		ct mark != 0x00000000 ct state established,related counter packets 167 bytes 9676
+		ct mark 0x00000000 counter packets 22 bytes 1340
+		ct mark 0x00000000 ct state new counter packets 22 bytes 1340
+		ct mark 0x00000000 ct state established,related counter packets 0 bytes 0
+		counter packets 190 bytes 11072
+	}
+
+	chain SET_MARK_ON_PACKET_NON_0 {
+		ct mark set mark counter packets 168 bytes 9732
+		ct state new counter packets 1 bytes 56
+		ct state established counter packets 166 bytes 9564
+		ct state related counter packets 1 bytes 112
+		counter packets 168 bytes 9732
+		jump SET_MARK_ON_PACKET_NON_0_COUNTERS
+	}
+
+	chain SET_MARK_ON_PACKET_NON_0_COUNTERS {
+		ct state new counter packets 1 bytes 56
+		ct state established counter packets 166 bytes 9564
+		ct state related counter packets 1 bytes 112
+		ct state invalid counter packets 0 bytes 0
+		ct state untracked counter packets 0 bytes 0
+		ct direction original counter packets 83 bytes 4328
+		ct direction reply counter packets 85 bytes 5404
+		ct status expected counter packets 0 bytes 0
+		ct status seen-reply counter packets 166 bytes 9564
+		ct status assured counter packets 145 bytes 8308
+		ct status confirmed counter packets 168 bytes 9732
+		ct status snat counter packets 168 bytes 9732
+		ct status dnat counter packets 0 bytes 0
+		ct status dying counter packets 0 bytes 0
+		iifname "ether23" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether23" ip protocol esp counter packets 0 bytes 0
+		iifname "ether23" ip protocol ah counter packets 0 bytes 0
+		iifname "ether23" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether23" ip protocol udp counter packets 3 bytes 168
+		iifname "ether23" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether23" ip protocol tcp counter packets 80 bytes 4160
+		iifname "ether23" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether23" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether23" ct state new counter packets 1 bytes 56
+		iifname "ether23" ct state established counter packets 82 bytes 4272
+		iifname "ether23" ct state related counter packets 0 bytes 0
+		iifname "ether23" ct state invalid counter packets 0 bytes 0
+		iifname "ether23" ct state untracked counter packets 0 bytes 0
+		iifname "ether23" ct direction original counter packets 83 bytes 4328
+		iifname "ether23" ct direction reply counter packets 0 bytes 0
+		iifname "ether23" ct status expected counter packets 0 bytes 0
+		iifname "ether23" ct status seen-reply counter packets 82 bytes 4272
+		iifname "ether23" ct status assured counter packets 82 bytes 4272
+		iifname "ether23" ct status confirmed counter packets 83 bytes 4328
+		iifname "ether23" ct status snat counter packets 83 bytes 4328
+		iifname "ether23" ct status dnat counter packets 0 bytes 0
+		iifname "ether23" ct status dying counter packets 0 bytes 0
+		iifname "ether5" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether5" ip protocol esp counter packets 0 bytes 0
+		iifname "ether5" ip protocol ah counter packets 0 bytes 0
+		iifname "ether5" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether5" ip protocol udp counter packets 0 bytes 0
+		iifname "ether5" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether5" ip protocol tcp counter packets 8 bytes 506
+		iifname "ether5" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether5" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether5" ct state new counter packets 0 bytes 0
+		iifname "ether5" ct state established counter packets 8 bytes 506
+		iifname "ether5" ct state related counter packets 0 bytes 0
+		iifname "ether5" ct state invalid counter packets 0 bytes 0
+		iifname "ether5" ct state untracked counter packets 0 bytes 0
+		iifname "ether5" ct direction original counter packets 0 bytes 0
+		iifname "ether5" ct direction reply counter packets 8 bytes 506
+		iifname "ether5" ct status expected counter packets 0 bytes 0
+		iifname "ether5" ct status seen-reply counter packets 8 bytes 506
+		iifname "ether5" ct status assured counter packets 6 bytes 386
+		iifname "ether5" ct status confirmed counter packets 8 bytes 506
+		iifname "ether5" ct status snat counter packets 8 bytes 506
+		iifname "ether5" ct status dnat counter packets 0 bytes 0
+		iifname "ether5" ct status dying counter packets 0 bytes 0
+		iifname "ether6" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether6" ip protocol esp counter packets 0 bytes 0
+		iifname "ether6" ip protocol ah counter packets 0 bytes 0
+		iifname "ether6" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether6" ip protocol udp counter packets 0 bytes 0
+		iifname "ether6" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether6" ip protocol tcp counter packets 8 bytes 506
+		iifname "ether6" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether6" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether6" ct state new counter packets 0 bytes 0
+		iifname "ether6" ct state established counter packets 8 bytes 506
+		iifname "ether6" ct state related counter packets 0 bytes 0
+		iifname "ether6" ct state invalid counter packets 0 bytes 0
+		iifname "ether6" ct state untracked counter packets 0 bytes 0
+		iifname "ether6" ct direction original counter packets 0 bytes 0
+		iifname "ether6" ct direction reply counter packets 8 bytes 506
+		iifname "ether6" ct status expected counter packets 0 bytes 0
+		iifname "ether6" ct status seen-reply counter packets 8 bytes 506
+		iifname "ether6" ct status assured counter packets 6 bytes 386
+		iifname "ether6" ct status confirmed counter packets 8 bytes 506
+		iifname "ether6" ct status snat counter packets 8 bytes 506
+		iifname "ether6" ct status dnat counter packets 0 bytes 0
+		iifname "ether6" ct status dying counter packets 0 bytes 0
+		iifname "ether7" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether7" ip protocol esp counter packets 0 bytes 0
+		iifname "ether7" ip protocol ah counter packets 0 bytes 0
+		iifname "ether7" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether7" ip protocol udp counter packets 0 bytes 0
+		iifname "ether7" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether7" ip protocol tcp counter packets 16 bytes 1012
+		iifname "ether7" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether7" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether7" ct state new counter packets 0 bytes 0
+		iifname "ether7" ct state established counter packets 16 bytes 1012
+		iifname "ether7" ct state related counter packets 0 bytes 0
+		iifname "ether7" ct state invalid counter packets 0 bytes 0
+		iifname "ether7" ct state untracked counter packets 0 bytes 0
+		iifname "ether7" ct direction original counter packets 0 bytes 0
+		iifname "ether7" ct direction reply counter packets 16 bytes 1012
+		iifname "ether7" ct status expected counter packets 0 bytes 0
+		iifname "ether7" ct status seen-reply counter packets 16 bytes 1012
+		iifname "ether7" ct status assured counter packets 12 bytes 772
+		iifname "ether7" ct status confirmed counter packets 16 bytes 1012
+		iifname "ether7" ct status snat counter packets 16 bytes 1012
+		iifname "ether7" ct status dnat counter packets 0 bytes 0
+		iifname "ether7" ct status dying counter packets 0 bytes 0
+		iifname "ether8" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether8" ip protocol esp counter packets 0 bytes 0
+		iifname "ether8" ip protocol ah counter packets 0 bytes 0
+		iifname "ether8" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether8" ip protocol udp counter packets 0 bytes 0
+		iifname "ether8" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether8" ip protocol tcp counter packets 12 bytes 759
+		iifname "ether8" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether8" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether8" ct state new counter packets 0 bytes 0
+		iifname "ether8" ct state established counter packets 12 bytes 759
+		iifname "ether8" ct state related counter packets 0 bytes 0
+		iifname "ether8" ct state invalid counter packets 0 bytes 0
+		iifname "ether8" ct state untracked counter packets 0 bytes 0
+		iifname "ether8" ct direction original counter packets 0 bytes 0
+		iifname "ether8" ct direction reply counter packets 12 bytes 759
+		iifname "ether8" ct status expected counter packets 0 bytes 0
+		iifname "ether8" ct status seen-reply counter packets 12 bytes 759
+		iifname "ether8" ct status assured counter packets 9 bytes 579
+		iifname "ether8" ct status confirmed counter packets 12 bytes 759
+		iifname "ether8" ct status snat counter packets 12 bytes 759
+		iifname "ether8" ct status dnat counter packets 0 bytes 0
+		iifname "ether8" ct status dying counter packets 0 bytes 0
+		iifname "ether9" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether9" ip protocol esp counter packets 0 bytes 0
+		iifname "ether9" ip protocol ah counter packets 0 bytes 0
+		iifname "ether9" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether9" ip protocol udp counter packets 4 bytes 224
+		iifname "ether9" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether9" ip protocol tcp counter packets 4 bytes 253
+		iifname "ether9" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether9" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether9" ct state new counter packets 0 bytes 0
+		iifname "ether9" ct state established counter packets 8 bytes 477
+		iifname "ether9" ct state related counter packets 0 bytes 0
+		iifname "ether9" ct state invalid counter packets 0 bytes 0
+		iifname "ether9" ct state untracked counter packets 0 bytes 0
+		iifname "ether9" ct direction original counter packets 0 bytes 0
+		iifname "ether9" ct direction reply counter packets 8 bytes 477
+		iifname "ether9" ct status expected counter packets 0 bytes 0
+		iifname "ether9" ct status seen-reply counter packets 8 bytes 477
+		iifname "ether9" ct status assured counter packets 6 bytes 361
+		iifname "ether9" ct status confirmed counter packets 8 bytes 477
+		iifname "ether9" ct status snat counter packets 8 bytes 477
+		iifname "ether9" ct status dnat counter packets 0 bytes 0
+		iifname "ether9" ct status dying counter packets 0 bytes 0
+		iifname "ether10" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether10" ip protocol esp counter packets 0 bytes 0
+		iifname "ether10" ip protocol ah counter packets 0 bytes 0
+		iifname "ether10" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether10" ip protocol udp counter packets 0 bytes 0
+		iifname "ether10" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether10" ip protocol tcp counter packets 8 bytes 508
+		iifname "ether10" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether10" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether10" ct state new counter packets 0 bytes 0
+		iifname "ether10" ct state established counter packets 8 bytes 508
+		iifname "ether10" ct state related counter packets 0 bytes 0
+		iifname "ether10" ct state invalid counter packets 0 bytes 0
+		iifname "ether10" ct state untracked counter packets 0 bytes 0
+		iifname "ether10" ct direction original counter packets 0 bytes 0
+		iifname "ether10" ct direction reply counter packets 8 bytes 508
+		iifname "ether10" ct status expected counter packets 0 bytes 0
+		iifname "ether10" ct status seen-reply counter packets 8 bytes 508
+		iifname "ether10" ct status assured counter packets 6 bytes 388
+		iifname "ether10" ct status confirmed counter packets 8 bytes 508
+		iifname "ether10" ct status snat counter packets 8 bytes 508
+		iifname "ether10" ct status dnat counter packets 0 bytes 0
+		iifname "ether10" ct status dying counter packets 0 bytes 0
+		iifname "ether11" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether11" ip protocol esp counter packets 0 bytes 0
+		iifname "ether11" ip protocol ah counter packets 0 bytes 0
+		iifname "ether11" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether11" ip protocol udp counter packets 0 bytes 0
+		iifname "ether11" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether11" ip protocol tcp counter packets 12 bytes 762
+		iifname "ether11" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether11" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether11" ct state new counter packets 0 bytes 0
+		iifname "ether11" ct state established counter packets 12 bytes 762
+		iifname "ether11" ct state related counter packets 0 bytes 0
+		iifname "ether11" ct state invalid counter packets 0 bytes 0
+		iifname "ether11" ct state untracked counter packets 0 bytes 0
+		iifname "ether11" ct direction original counter packets 0 bytes 0
+		iifname "ether11" ct direction reply counter packets 12 bytes 762
+		iifname "ether11" ct status expected counter packets 0 bytes 0
+		iifname "ether11" ct status seen-reply counter packets 12 bytes 762
+		iifname "ether11" ct status assured counter packets 9 bytes 582
+		iifname "ether11" ct status confirmed counter packets 12 bytes 762
+		iifname "ether11" ct status snat counter packets 12 bytes 762
+		iifname "ether11" ct status dnat counter packets 0 bytes 0
+		iifname "ether11" ct status dying counter packets 0 bytes 0
+		iifname "ether12" ip protocol icmp counter packets 1 bytes 112
+		iifname "ether12" ip protocol esp counter packets 0 bytes 0
+		iifname "ether12" ip protocol ah counter packets 0 bytes 0
+		iifname "ether12" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether12" ip protocol udp counter packets 0 bytes 0
+		iifname "ether12" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether12" ip protocol tcp counter packets 4 bytes 254
+		iifname "ether12" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether12" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether12" ct state new counter packets 0 bytes 0
+		iifname "ether12" ct state established counter packets 4 bytes 254
+		iifname "ether12" ct state related counter packets 1 bytes 112
+		iifname "ether12" ct state invalid counter packets 0 bytes 0
+		iifname "ether12" ct state untracked counter packets 0 bytes 0
+		iifname "ether12" ct direction original counter packets 0 bytes 0
+		iifname "ether12" ct direction reply counter packets 5 bytes 366
+		iifname "ether12" ct status expected counter packets 0 bytes 0
+		iifname "ether12" ct status seen-reply counter packets 4 bytes 254
+		iifname "ether12" ct status assured counter packets 3 bytes 194
+		iifname "ether12" ct status confirmed counter packets 5 bytes 366
+		iifname "ether12" ct status snat counter packets 5 bytes 366
+		iifname "ether12" ct status dnat counter packets 0 bytes 0
+		iifname "ether12" ct status dying counter packets 0 bytes 0
+		iifname "ether13" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether13" ip protocol esp counter packets 0 bytes 0
+		iifname "ether13" ip protocol ah counter packets 0 bytes 0
+		iifname "ether13" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether13" ip protocol udp counter packets 0 bytes 0
+		iifname "ether13" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether13" ip protocol tcp counter packets 8 bytes 508
+		iifname "ether13" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether13" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether13" ct state new counter packets 0 bytes 0
+		iifname "ether13" ct state established counter packets 8 bytes 508
+		iifname "ether13" ct state related counter packets 0 bytes 0
+		iifname "ether13" ct state invalid counter packets 0 bytes 0
+		iifname "ether13" ct state untracked counter packets 0 bytes 0
+		iifname "ether13" ct direction original counter packets 0 bytes 0
+		iifname "ether13" ct direction reply counter packets 8 bytes 508
+		iifname "ether13" ct status expected counter packets 0 bytes 0
+		iifname "ether13" ct status seen-reply counter packets 8 bytes 508
+		iifname "ether13" ct status assured counter packets 6 bytes 388
+		iifname "ether13" ct status confirmed counter packets 8 bytes 508
+		iifname "ether13" ct status snat counter packets 8 bytes 508
+		iifname "ether13" ct status dnat counter packets 0 bytes 0
+		iifname "ether13" ct status dying counter packets 0 bytes 0
+		iifname "ether14" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether14" ip protocol esp counter packets 0 bytes 0
+		iifname "ether14" ip protocol ah counter packets 0 bytes 0
+		iifname "ether14" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether14" ip protocol udp counter packets 0 bytes 0
+		iifname "ether14" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether14" ip protocol tcp counter packets 0 bytes 0
+		iifname "ether14" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether14" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether14" ct state new counter packets 0 bytes 0
+		iifname "ether14" ct state established counter packets 0 bytes 0
+		iifname "ether14" ct state related counter packets 0 bytes 0
+		iifname "ether14" ct state invalid counter packets 0 bytes 0
+		iifname "ether14" ct state untracked counter packets 0 bytes 0
+		iifname "ether14" ct direction original counter packets 0 bytes 0
+		iifname "ether14" ct direction reply counter packets 0 bytes 0
+		iifname "ether14" ct status expected counter packets 0 bytes 0
+		iifname "ether14" ct status seen-reply counter packets 0 bytes 0
+		iifname "ether14" ct status assured counter packets 0 bytes 0
+		iifname "ether14" ct status confirmed counter packets 0 bytes 0
+		iifname "ether14" ct status snat counter packets 0 bytes 0
+		iifname "ether14" ct status dnat counter packets 0 bytes 0
+		iifname "ether14" ct status dying counter packets 0 bytes 0
+		iifname "ether15" ip protocol icmp counter packets 0 bytes 0
+		iifname "ether15" ip protocol esp counter packets 0 bytes 0
+		iifname "ether15" ip protocol ah counter packets 0 bytes 0
+		iifname "ether15" ip protocol ipcomp counter packets 0 bytes 0
+		iifname "ether15" ip protocol udp counter packets 0 bytes 0
+		iifname "ether15" ip protocol udplite counter packets 0 bytes 0
+		iifname "ether15" ip protocol tcp counter packets 0 bytes 0
+		iifname "ether15" ip protocol dccp counter packets 0 bytes 0
+		iifname "ether15" ip protocol sctp counter packets 0 bytes 0
+		iifname "ether15" ct state new counter packets 0 bytes 0
+		iifname "ether15" ct state established counter packets 0 bytes 0
+		iifname "ether15" ct state related counter packets 0 bytes 0
+		iifname "ether15" ct state invalid counter packets 0 bytes 0
+		iifname "ether15" ct state untracked counter packets 0 bytes 0
+		iifname "ether15" ct direction original counter packets 0 bytes 0
+		iifname "ether15" ct direction reply counter packets 0 bytes 0
+		iifname "ether15" ct status expected counter packets 0 bytes 0
+		iifname "ether15" ct status seen-reply counter packets 0 bytes 0
+		iifname "ether15" ct status assured counter packets 0 bytes 0
+		iifname "ether15" ct status confirmed counter packets 0 bytes 0
+		iifname "ether15" ct status snat counter packets 0 bytes 0
+		iifname "ether15" ct status dnat counter packets 0 bytes 0
+		iifname "ether15" ct status dying counter packets 0 bytes 0
+		counter packets 168 bytes 9732 accept
+	}
+
+	chain POSTROUTING_COUNTERS {
+		counter packets 190 bytes 11072
+		oifname "ether23" ip protocol icmp counter packets 1 bytes 112
+		oifname "ether23" ip protocol esp counter packets 0 bytes 0
+		oifname "ether23" ip protocol ah counter packets 0 bytes 0
+		oifname "ether23" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether23" ip protocol udp counter packets 4 bytes 224
+		oifname "ether23" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether23" ip protocol tcp counter packets 80 bytes 5068
+		oifname "ether23" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether23" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether23" ct state new counter packets 0 bytes 0
+		oifname "ether23" ct state established counter packets 84 bytes 5292
+		oifname "ether23" ct state related counter packets 1 bytes 112
+		oifname "ether23" ct state invalid counter packets 0 bytes 0
+		oifname "ether23" ct state untracked counter packets 0 bytes 0
+		oifname "ether23" ct direction original counter packets 0 bytes 0
+		oifname "ether23" ct direction reply counter packets 85 bytes 5404
+		oifname "ether23" ct status expected counter packets 0 bytes 0
+		oifname "ether23" ct status seen-reply counter packets 84 bytes 5292
+		oifname "ether23" ct status assured counter packets 63 bytes 4036
+		oifname "ether23" ct status confirmed counter packets 85 bytes 5404
+		oifname "ether23" ct status snat counter packets 85 bytes 5404
+		oifname "ether23" ct status dnat counter packets 0 bytes 0
+		oifname "ether23" ct status dying counter packets 0 bytes 0
+		oifname "ether5" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether5" ip protocol esp counter packets 0 bytes 0
+		oifname "ether5" ip protocol ah counter packets 0 bytes 0
+		oifname "ether5" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether5" ip protocol udp counter packets 0 bytes 0
+		oifname "ether5" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether5" ip protocol tcp counter packets 10 bytes 536
+		oifname "ether5" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether5" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether5" ct state new counter packets 2 bytes 120
+		oifname "ether5" ct state established counter packets 8 bytes 416
+		oifname "ether5" ct state related counter packets 0 bytes 0
+		oifname "ether5" ct state invalid counter packets 0 bytes 0
+		oifname "ether5" ct state untracked counter packets 0 bytes 0
+		oifname "ether5" ct direction original counter packets 10 bytes 536
+		oifname "ether5" ct direction reply counter packets 0 bytes 0
+		oifname "ether5" ct status expected counter packets 0 bytes 0
+		oifname "ether5" ct status seen-reply counter packets 8 bytes 416
+		oifname "ether5" ct status assured counter packets 8 bytes 416
+		oifname "ether5" ct status confirmed counter packets 8 bytes 416
+		oifname "ether5" ct status snat counter packets 8 bytes 416
+		oifname "ether5" ct status dnat counter packets 0 bytes 0
+		oifname "ether5" ct status dying counter packets 0 bytes 0
+		oifname "ether6" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether6" ip protocol esp counter packets 0 bytes 0
+		oifname "ether6" ip protocol ah counter packets 0 bytes 0
+		oifname "ether6" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether6" ip protocol udp counter packets 0 bytes 0
+		oifname "ether6" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether6" ip protocol tcp counter packets 10 bytes 536
+		oifname "ether6" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether6" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether6" ct state new counter packets 2 bytes 120
+		oifname "ether6" ct state established counter packets 8 bytes 416
+		oifname "ether6" ct state related counter packets 0 bytes 0
+		oifname "ether6" ct state invalid counter packets 0 bytes 0
+		oifname "ether6" ct state untracked counter packets 0 bytes 0
+		oifname "ether6" ct direction original counter packets 10 bytes 536
+		oifname "ether6" ct direction reply counter packets 0 bytes 0
+		oifname "ether6" ct status expected counter packets 0 bytes 0
+		oifname "ether6" ct status seen-reply counter packets 8 bytes 416
+		oifname "ether6" ct status assured counter packets 8 bytes 416
+		oifname "ether6" ct status confirmed counter packets 8 bytes 416
+		oifname "ether6" ct status snat counter packets 8 bytes 416
+		oifname "ether6" ct status dnat counter packets 0 bytes 0
+		oifname "ether6" ct status dying counter packets 0 bytes 0
+		oifname "ether7" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether7" ip protocol esp counter packets 0 bytes 0
+		oifname "ether7" ip protocol ah counter packets 0 bytes 0
+		oifname "ether7" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether7" ip protocol udp counter packets 0 bytes 0
+		oifname "ether7" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether7" ip protocol tcp counter packets 20 bytes 1072
+		oifname "ether7" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether7" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether7" ct state new counter packets 4 bytes 240
+		oifname "ether7" ct state established counter packets 16 bytes 832
+		oifname "ether7" ct state related counter packets 0 bytes 0
+		oifname "ether7" ct state invalid counter packets 0 bytes 0
+		oifname "ether7" ct state untracked counter packets 0 bytes 0
+		oifname "ether7" ct direction original counter packets 20 bytes 1072
+		oifname "ether7" ct direction reply counter packets 0 bytes 0
+		oifname "ether7" ct status expected counter packets 0 bytes 0
+		oifname "ether7" ct status seen-reply counter packets 16 bytes 832
+		oifname "ether7" ct status assured counter packets 16 bytes 832
+		oifname "ether7" ct status confirmed counter packets 16 bytes 832
+		oifname "ether7" ct status snat counter packets 16 bytes 832
+		oifname "ether7" ct status dnat counter packets 0 bytes 0
+		oifname "ether7" ct status dying counter packets 0 bytes 0
+		oifname "ether8" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether8" ip protocol esp counter packets 0 bytes 0
+		oifname "ether8" ip protocol ah counter packets 0 bytes 0
+		oifname "ether8" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether8" ip protocol udp counter packets 0 bytes 0
+		oifname "ether8" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether8" ip protocol tcp counter packets 15 bytes 804
+		oifname "ether8" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether8" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether8" ct state new counter packets 3 bytes 180
+		oifname "ether8" ct state established counter packets 12 bytes 624
+		oifname "ether8" ct state related counter packets 0 bytes 0
+		oifname "ether8" ct state invalid counter packets 0 bytes 0
+		oifname "ether8" ct state untracked counter packets 0 bytes 0
+		oifname "ether8" ct direction original counter packets 15 bytes 804
+		oifname "ether8" ct direction reply counter packets 0 bytes 0
+		oifname "ether8" ct status expected counter packets 0 bytes 0
+		oifname "ether8" ct status seen-reply counter packets 12 bytes 624
+		oifname "ether8" ct status assured counter packets 12 bytes 624
+		oifname "ether8" ct status confirmed counter packets 12 bytes 624
+		oifname "ether8" ct status snat counter packets 12 bytes 624
+		oifname "ether8" ct status dnat counter packets 0 bytes 0
+		oifname "ether8" ct status dying counter packets 0 bytes 0
+		oifname "ether9" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether9" ip protocol esp counter packets 0 bytes 0
+		oifname "ether9" ip protocol ah counter packets 0 bytes 0
+		oifname "ether9" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether9" ip protocol udp counter packets 4 bytes 224
+		oifname "ether9" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether9" ip protocol tcp counter packets 5 bytes 268
+		oifname "ether9" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether9" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether9" ct state new counter packets 3 bytes 172
+		oifname "ether9" ct state established counter packets 6 bytes 320
+		oifname "ether9" ct state related counter packets 0 bytes 0
+		oifname "ether9" ct state invalid counter packets 0 bytes 0
+		oifname "ether9" ct state untracked counter packets 0 bytes 0
+		oifname "ether9" ct direction original counter packets 9 bytes 492
+		oifname "ether9" ct direction reply counter packets 0 bytes 0
+		oifname "ether9" ct status expected counter packets 0 bytes 0
+		oifname "ether9" ct status seen-reply counter packets 6 bytes 320
+		oifname "ether9" ct status assured counter packets 6 bytes 320
+		oifname "ether9" ct status confirmed counter packets 7 bytes 376
+		oifname "ether9" ct status snat counter packets 7 bytes 376
+		oifname "ether9" ct status dnat counter packets 0 bytes 0
+		oifname "ether9" ct status dying counter packets 0 bytes 0
+		oifname "ether10" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether10" ip protocol esp counter packets 0 bytes 0
+		oifname "ether10" ip protocol ah counter packets 0 bytes 0
+		oifname "ether10" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether10" ip protocol udp counter packets 0 bytes 0
+		oifname "ether10" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether10" ip protocol tcp counter packets 10 bytes 536
+		oifname "ether10" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether10" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether10" ct state new counter packets 2 bytes 120
+		oifname "ether10" ct state established counter packets 8 bytes 416
+		oifname "ether10" ct state related counter packets 0 bytes 0
+		oifname "ether10" ct state invalid counter packets 0 bytes 0
+		oifname "ether10" ct state untracked counter packets 0 bytes 0
+		oifname "ether10" ct direction original counter packets 10 bytes 536
+		oifname "ether10" ct direction reply counter packets 0 bytes 0
+		oifname "ether10" ct status expected counter packets 0 bytes 0
+		oifname "ether10" ct status seen-reply counter packets 8 bytes 416
+		oifname "ether10" ct status assured counter packets 8 bytes 416
+		oifname "ether10" ct status confirmed counter packets 8 bytes 416
+		oifname "ether10" ct status snat counter packets 8 bytes 416
+		oifname "ether10" ct status dnat counter packets 0 bytes 0
+		oifname "ether10" ct status dying counter packets 0 bytes 0
+		oifname "ether11" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether11" ip protocol esp counter packets 0 bytes 0
+		oifname "ether11" ip protocol ah counter packets 0 bytes 0
+		oifname "ether11" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether11" ip protocol udp counter packets 0 bytes 0
+		oifname "ether11" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether11" ip protocol tcp counter packets 15 bytes 804
+		oifname "ether11" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether11" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether11" ct state new counter packets 3 bytes 180
+		oifname "ether11" ct state established counter packets 12 bytes 624
+		oifname "ether11" ct state related counter packets 0 bytes 0
+		oifname "ether11" ct state invalid counter packets 0 bytes 0
+		oifname "ether11" ct state untracked counter packets 0 bytes 0
+		oifname "ether11" ct direction original counter packets 15 bytes 804
+		oifname "ether11" ct direction reply counter packets 0 bytes 0
+		oifname "ether11" ct status expected counter packets 0 bytes 0
+		oifname "ether11" ct status seen-reply counter packets 12 bytes 624
+		oifname "ether11" ct status assured counter packets 12 bytes 624
+		oifname "ether11" ct status confirmed counter packets 12 bytes 624
+		oifname "ether11" ct status snat counter packets 12 bytes 624
+		oifname "ether11" ct status dnat counter packets 0 bytes 0
+		oifname "ether11" ct status dying counter packets 0 bytes 0
+		oifname "ether12" ip protocol icmp counter packets 1 bytes 84
+		oifname "ether12" ip protocol esp counter packets 0 bytes 0
+		oifname "ether12" ip protocol ah counter packets 0 bytes 0
+		oifname "ether12" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether12" ip protocol udp counter packets 0 bytes 0
+		oifname "ether12" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether12" ip protocol tcp counter packets 5 bytes 268
+		oifname "ether12" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether12" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether12" ct state new counter packets 2 bytes 144
+		oifname "ether12" ct state established counter packets 4 bytes 208
+		oifname "ether12" ct state related counter packets 0 bytes 0
+		oifname "ether12" ct state invalid counter packets 0 bytes 0
+		oifname "ether12" ct state untracked counter packets 0 bytes 0
+		oifname "ether12" ct direction original counter packets 6 bytes 352
+		oifname "ether12" ct direction reply counter packets 0 bytes 0
+		oifname "ether12" ct status expected counter packets 0 bytes 0
+		oifname "ether12" ct status seen-reply counter packets 4 bytes 208
+		oifname "ether12" ct status assured counter packets 4 bytes 208
+		oifname "ether12" ct status confirmed counter packets 4 bytes 208
+		oifname "ether12" ct status snat counter packets 4 bytes 208
+		oifname "ether12" ct status dnat counter packets 0 bytes 0
+		oifname "ether12" ct status dying counter packets 0 bytes 0
+		oifname "ether13" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether13" ip protocol esp counter packets 0 bytes 0
+		oifname "ether13" ip protocol ah counter packets 0 bytes 0
+		oifname "ether13" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether13" ip protocol udp counter packets 0 bytes 0
+		oifname "ether13" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether13" ip protocol tcp counter packets 10 bytes 536
+		oifname "ether13" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether13" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether13" ct state new counter packets 2 bytes 120
+		oifname "ether13" ct state established counter packets 8 bytes 416
+		oifname "ether13" ct state related counter packets 0 bytes 0
+		oifname "ether13" ct state invalid counter packets 0 bytes 0
+		oifname "ether13" ct state untracked counter packets 0 bytes 0
+		oifname "ether13" ct direction original counter packets 10 bytes 536
+		oifname "ether13" ct direction reply counter packets 0 bytes 0
+		oifname "ether13" ct status expected counter packets 0 bytes 0
+		oifname "ether13" ct status seen-reply counter packets 8 bytes 416
+		oifname "ether13" ct status assured counter packets 8 bytes 416
+		oifname "ether13" ct status confirmed counter packets 8 bytes 416
+		oifname "ether13" ct status snat counter packets 8 bytes 416
+		oifname "ether13" ct status dnat counter packets 0 bytes 0
+		oifname "ether13" ct status dying counter packets 0 bytes 0
+		oifname "ether14" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether14" ip protocol esp counter packets 0 bytes 0
+		oifname "ether14" ip protocol ah counter packets 0 bytes 0
+		oifname "ether14" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether14" ip protocol udp counter packets 0 bytes 0
+		oifname "ether14" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether14" ip protocol tcp counter packets 0 bytes 0
+		oifname "ether14" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether14" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether14" ct state new counter packets 0 bytes 0
+		oifname "ether14" ct state established counter packets 0 bytes 0
+		oifname "ether14" ct state related counter packets 0 bytes 0
+		oifname "ether14" ct state invalid counter packets 0 bytes 0
+		oifname "ether14" ct state untracked counter packets 0 bytes 0
+		oifname "ether14" ct direction original counter packets 0 bytes 0
+		oifname "ether14" ct direction reply counter packets 0 bytes 0
+		oifname "ether14" ct status expected counter packets 0 bytes 0
+		oifname "ether14" ct status seen-reply counter packets 0 bytes 0
+		oifname "ether14" ct status assured counter packets 0 bytes 0
+		oifname "ether14" ct status confirmed counter packets 0 bytes 0
+		oifname "ether14" ct status snat counter packets 0 bytes 0
+		oifname "ether14" ct status dnat counter packets 0 bytes 0
+		oifname "ether14" ct status dying counter packets 0 bytes 0
+		oifname "ether15" ip protocol icmp counter packets 0 bytes 0
+		oifname "ether15" ip protocol esp counter packets 0 bytes 0
+		oifname "ether15" ip protocol ah counter packets 0 bytes 0
+		oifname "ether15" ip protocol ipcomp counter packets 0 bytes 0
+		oifname "ether15" ip protocol udp counter packets 0 bytes 0
+		oifname "ether15" ip protocol udplite counter packets 0 bytes 0
+		oifname "ether15" ip protocol tcp counter packets 0 bytes 0
+		oifname "ether15" ip protocol dccp counter packets 0 bytes 0
+		oifname "ether15" ip protocol sctp counter packets 0 bytes 0
+		oifname "ether15" ct state new counter packets 0 bytes 0
+		oifname "ether15" ct state established counter packets 0 bytes 0
+		oifname "ether15" ct state related counter packets 0 bytes 0
+		oifname "ether15" ct state invalid counter packets 0 bytes 0
+		oifname "ether15" ct state untracked counter packets 0 bytes 0
+		oifname "ether15" ct direction original counter packets 0 bytes 0
+		oifname "ether15" ct direction reply counter packets 0 bytes 0
+		oifname "ether15" ct status expected counter packets 0 bytes 0
+		oifname "ether15" ct status seen-reply counter packets 0 bytes 0
+		oifname "ether15" ct status assured counter packets 0 bytes 0
+		oifname "ether15" ct status confirmed counter packets 0 bytes 0
+		oifname "ether15" ct status snat counter packets 0 bytes 0
+		oifname "ether15" ct status dnat counter packets 0 bytes 0
+		oifname "ether15" ct status dying counter packets 0 bytes 0
+		ct mark set mark counter packets 190 bytes 11072
+		counter packets 190 bytes 11072
 	}
 }
